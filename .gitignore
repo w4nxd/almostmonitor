@@ -1,0 +1,28 @@
+# Build output
+build/
+/app/build/
+*.apk
+*.aab
+
+# Gradle / Kotlin caches
+.gradle/
+.kotlin/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Machine-specific (contains your Windows user path)
+local.properties
+
+# Signing keys: never publish these
+*.jks
+*.keystore
+keystore.properties
+
+# Debug logs (may contain device details)
+logcat.txt
+*.log

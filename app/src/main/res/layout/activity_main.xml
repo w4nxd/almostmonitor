@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The phone screen is wider than the camera image (e.g. 20:9 vs 16:9).
+  The image sits in the middle and the leftover side bands are used:
+  left = REC + quick buttons, right = camera settings; scopes sit over the image, on the left.
+  Column widths are computed in MainActivity.updateSideColumns().
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <android.opengl.GLSurfaceView
+        android:id="@+id/glView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Red frame around the image while the camera records -->
+    <View
+        android:id="@+id/recFrame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/rec_frame"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:padding="16dp"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:background="#99000000" />
+
+
+    <!-- Top, over the image: mode, focal length, battery, card space (positioned in updateSideColumns) -->
+    <TextView
+        android:id="@+id/info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:background="#88000000"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:maxLines="1"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp" />
+
+    <!-- Left column: REC + quick buttons -->
+    <LinearLayout
+        android:id="@+id/leftCol"
+        android:layout_width="96dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#0E0E0E"
+        android:orientation="vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:id="@+id/recLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:background="#FF3B30"
+            android:gravity="center"
+            android:text="● REC"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- Quick buttons (zebras, peaking...), created in MainActivity.buildQuickButtons() -->
+        <LinearLayout
+            android:id="@+id/quickCol"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical" />
+
+    </LinearLayout>
+
+    <!-- Scopes, over the left side of the image (position and size set in updateSideColumns) -->
+    <LinearLayout
+        android:id="@+id/scopesOverlay"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:orientation="vertical">
+
+        <io.github.almostmonitor.HistogramView
+            android:id="@+id/histogram"
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_marginBottom="6dp"
+            android:visibility="gone" />
+
+        <io.github.almostmonitor.ScopeView
+            android:id="@+id/waveView"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginBottom="6dp"
+            android:visibility="gone" />
+
+        <io.github.almostmonitor.ScopeView
+            android:id="@+id/paradeView"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginBottom="6dp"
+            android:visibility="gone" />
+
+        <io.github.almostmonitor.ScopeView
+            android:id="@+id/vectorView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="6dp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Right column: camera settings, equal tiles created in MainActivity.buildTiles() -->
+    <LinearLayout
+        android:id="@+id/rightCol"
+        android:layout_width="96dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="#0E0E0E"
+        android:orientation="vertical"
+        android:padding="3dp" />
+
+    <!-- Vertical picker shown next to a setting (e.g. ISO) -->
+    <ScrollView
+        android:id="@+id/picker"
+        android:layout_width="104dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_marginEnd="96dp"
+        android:background="#EE161616"
+        android:fadeScrollbars="false"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/pickerList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
+    </ScrollView>
+
+    <!-- Unlock button, visible only while the screen is locked (over the right column) -->
+    <TextView
+        android:id="@+id/lockBtn"
+        android:layout_width="96dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="#F00E0E0E"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="🔒\n\nPress and hold to unlock"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <!-- Hidden menu: opens next to the button column -->
+    <ScrollView
+        android:id="@+id/panel"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_marginEnd="96dp"
+        android:background="#EE111111"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView style="@style/MenuHeader" android:text="Tools" />
+            <Switch android:id="@+id/swZebra" style="@style/MenuSwitch" android:text="Zebras" />
+            <Switch android:id="@+id/swPeak" style="@style/MenuSwitch" android:text="Focus peaking" />
+            <Switch android:id="@+id/swFalse" style="@style/MenuSwitch" android:text="False color" />
+            <Switch android:id="@+id/swLutOn" style="@style/MenuSwitch" android:text="LUT" />
+            <Switch android:id="@+id/swHist" style="@style/MenuSwitch" android:text="Histogram" />
+            <Button
+                android:id="@+id/btnGuide"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView style="@style/MenuHeader" android:text="Exposure" />
+            <Switch android:id="@+id/swWave" style="@style/MenuSwitch" android:text="Waveform" />
+            <Switch android:id="@+id/swParade" style="@style/MenuSwitch" android:text="RGB parade" />
+            <Switch android:id="@+id/swVector" style="@style/MenuSwitch" android:text="Vectorscope (with skin tone line)" />
+            <Switch android:id="@+id/swHistRgb" style="@style/MenuSwitch" android:text="RGB histogram (instead of luma)" />
+            <TextView
+                android:id="@+id/zebraLabel"
+                style="@style/MenuLabel" />
+            <SeekBar
+                android:id="@+id/zebraSeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="30" />
+            <Switch android:id="@+id/zebraAfterLut" style="@style/MenuSwitch" android:text="Zebras and false color after LUT" />
+            <TextView
+                style="@style/MenuHint"
+                android:text="False color: purple = black, blue = shadows, green = 18% grey, pink = skin, yellow = near clipping, red = clipped. Scopes show the camera image before the LUT." />
+
+            <TextView style="@style/MenuHeader" android:text="Focus" />
+            <Switch android:id="@+id/swAf" style="@style/MenuSwitch" android:text="Camera AF point" />
+            <Switch android:id="@+id/swTouchAf" style="@style/MenuSwitch" android:text="Touch AF (tap the image)" />
+            <Switch android:id="@+id/swPeakMono" style="@style/MenuSwitch" android:text="Peaking on black &amp; white image" />
+            <TextView
+                android:id="@+id/peakLabel"
+                style="@style/MenuLabel" />
+            <SeekBar
+                android:id="@+id/peakSeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100" />
+            <Button
+                android:id="@+id/peakColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <TextView
+                style="@style/MenuHint"
+                android:text="Tap the image = touch AF. App zoom: double tap or pinch; drag to move the zoomed area." />
+
+            <TextView style="@style/MenuHeader" android:text="Framing" />
+            <Button
+                android:id="@+id/btnSqueeze"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <Switch android:id="@+id/swMirror" style="@style/MenuSwitch" android:text="Mirror (left-right)" />
+            <Switch android:id="@+id/swRotate" style="@style/MenuSwitch" android:text="Rotate 180°" />
+            <Switch android:id="@+id/swSafe" style="@style/MenuSwitch" android:text="Safe areas 90% / 80%" />
+            <Switch android:id="@+id/thirds" style="@style/MenuSwitch" android:text="Rule of thirds + center cross" />
+
+            <TextView style="@style/MenuHeader" android:text="Camera" />
+            <Switch android:id="@+id/swRec" style="@style/MenuSwitch" android:text="REC indicator" />
+            <Button
+                android:id="@+id/btnGuide2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Camera &amp; connection guide" />
+
+            <TextView style="@style/MenuHeader" android:text="Reference" />
+            <Button
+                android:id="@+id/btnCapture"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Capture frame" />
+            <Switch android:id="@+id/swReference" style="@style/MenuSwitch" android:text="Overlay capture (50%)" />
+            <TextView
+                style="@style/MenuHint"
+                android:text="The capture is saved to Gallery › Pictures/Almost Monitor and becomes the overlay reference." />
+
+            <TextView style="@style/MenuHeader" android:text="LUT" />
+            <TextView
+                android:id="@+id/lutName"
+                style="@style/MenuLabel" />
+            <Button
+                android:id="@+id/loadLut"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Load LUT (.cube)" />
+
+            <TextView style="@style/MenuHeader" android:text="Screen" />
+            <Switch android:id="@+id/swLock" style="@style/MenuSwitch" android:text="Lock screen" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Welcome screen: camera choice + connection steps -->
+    <ScrollView
+        android:id="@+id/welcome"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F7101010"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="48dp"
+            android:paddingEnd="48dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Welcome to Almost Monitor for Canon EOS"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Use your phone as a monitor and remote for a Canon EOS camera over a USB cable."
+                android:textColor="#BBFFFFFF"
+                android:textSize="14sp" />
+
+            <TextView style="@style/MenuHeader" android:layout_marginTop="20dp" android:text="1. Choose your camera" />
+            <Spinner
+                android:id="@+id/welcomeModel"
+                android:layout_width="320dp"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/welcomeCompat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="#DDFFFFFF"
+                android:textSize="13sp" />
+
+            <TextView style="@style/MenuHeader" android:layout_marginTop="20dp" android:text="2. Connect the camera" />
+            <TextView
+                android:id="@+id/welcomeSteps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="2dp"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <CheckBox
+                android:id="@+id/welcomeShow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Show this screen when the app starts"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/welcomeStart"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Start" />
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>
